@@ -539,17 +539,17 @@ void DaemonConnection::requestSession_thread( boost::thread ** thread, const std
             cb.fire("failed", ArgumentList( "Missing 'name' parameter from the VMCP response" )( HVE_USAGE_ERROR ) );
             runningThreads.remove_thread(thisThread);
             return;
-        };
+        }
         if (!vmcpData->contains("secret")) {
             cb.fire("failed", ArgumentList( "Missing 'secret' parameter from the VMCP response" )( HVE_USAGE_ERROR ) );
             runningThreads.remove_thread(thisThread);
             return;
-        };
+        }
         if (!vmcpData->contains("signature")) {
             cb.fire("failed", ArgumentList( "Missing 'signature' parameter from the VMCP response" )( HVE_USAGE_ERROR ) );
             runningThreads.remove_thread(thisThread);
             return;
-        };
+        }
         if (vmcpData->contains("diskURL") && !vmcpData->contains("diskChecksum")) {
             cb.fire("failed", ArgumentList( "A 'diskURL' was specified, but no 'diskChecksum' was found in the VMCP response" )( HVE_USAGE_ERROR ) );
             runningThreads.remove_thread(thisThread);
@@ -644,6 +644,12 @@ void DaemonConnection::requestSession_thread( boost::thread ** thread, const std
         CVMWA_LOG("Debug", "Open session");
 
         // =======================================================================
+
+        if (!vmcpData->filterParameter("name")) { //User may insert illegal characters, which we want to filter
+            cb.fire("failed", ArgumentList( "Parameter 'name' contains only illegal characters" )( HVE_USAGE_ERROR ) );
+            runningThreads.remove_thread(thisThread);
+            return;
+        }
 
         // Prepare a progress task that will be used by sessionOpen    
         FiniteTaskPtr pOpen = pTasks->begin<FiniteTask>( "Open session" );
